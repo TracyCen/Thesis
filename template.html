@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="styles.css" rel="stylesheet" type="text/css">
+    <script src="https://unpkg.com/jspsych"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-call-function"></script>
+    <script src="https://unpkg.com/@jspsych-contrib/plugin-html-keyboard-response-raf"></script>
+    <script src="https://unpkg.com/@jspsych-contrib/plugin-pipe"></script>
+    <script src="../dist/index.browser.js"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-survey-likert@2.1.0"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-survey-text@2.1.0"></script>
+    <link href="https://unpkg.com/jspsych/css/jspsych.css" rel="stylesheet" type="text/css">
+  </head>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cantarell:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Exo:ital,wght@0,100..900;1,100..900&display=swap');
+  </style>
+  <body></body>
+  <script>
+    const jsPsych = initJsPsych({
+      on_finish: function() {
+        //jsPsych.data.get().localSave('csv','mydata.csv');
+        window.location = "https://app.prolific.com/submissions/complete?cc=CVE0WFVW" //need to change to real project link      
+      },
+    });
+
+    const timeline = [];
+
+    const ran_subject_id = jsPsych.randomization.randomID(10);
+	  
+    const filename = `${ran_subject_id}.csv`;
+
+    function generateRandomZeroOrOne() {
+      return Math.round(Math.random());
+    }
+
+    const version = generateRandomZeroOrOne()
+
+    console.log(version)
+
+    const welcome = {
+        type: jsPsychHtmlKeyboardResponseRaf, 
+        stimulus: "Welcome to the experiment. Press any key to begin."
+    }
+
+    const instruction = {
+        type: jsPsychHtmlKeyboardResponseRaf, 
+        stimulus: `
+Thank you for participating! Please read the following instructions carefully.
+
+This research involves:
+1.A chat conversation with a friendly AI (10 mins recommended, 5-min minimum)
+2.Brief follow-up questions about your experience
+
+Here's what to expect when you proceed to the next page:
+1. We ask you to chat for at least 5 minutes to get the most from the conversation
+2. After 5 minutes, a green "Continue" button will appear to the left of the "Send" button
+3. When you feel ready to finish (after the 5 minutes), click "Continue" to end the chat
+4. The conversation will automatically save when you continue - no need to rush!
+
+Important notes:
+1. You can stop the chat at any time—but if it’s within the first 5 minutes, please wait until the Continue button appears before ending.
+2. Typical chats last ~10 minutes, but you may continue up to 15 minutes if deeply engaged.
+3. Once you click Continue, the chat will save and you’ll proceed forward with NO option to return.
+4. DO NOT refresh the page at any point.
+5. All data is 100% anonymous - only researchers see transcripts
+
+After Chatting:
+You'll answer 10 quick questions about your experience (~2 minutes)
+Total time: Typically 12-17 minutes
+
+Press any key when you are ready to begin chatting. We appreciate your time!`
+    }
+
+    prompts = [
+      {
+        message: `Let’s chat! 💬
+You’re now connected with our AI. A few things to know:
+- Please don’t refresh the page at any point
+– your conversation saves automatically as you go
+- Chat freely about anything 
+– there are no right or wrong answers
+- The "Continue" button will light up after 5 minutes (you’ll see it appear)
+- Stop anytime you like – but if it’s before 5 minutes, just wait for the button first
+- Once it appears, take your time – stay as long as you want (up to 15 minutes total)
+- When you’re truly ready, click "Continue" to finish – this will save everything and move forward
+
+Your privacy:
+- Everything you share stays completely anonymous
+- Only our research team will see the transcripts
+- No personal data is ever collected
+
+This is your space to explore what matters to you. The AI is here to listen without judgment.`,
+
+        role: "system-prompt",
+        message_trigger: 0,
+        timer_trigger: 1000000,
+      },
+      {
+        message: "Hi there! I’m glad we get to chat today.We’re here to talk about anything that might be on your mind—something you’ve been worried about or just thoughts you’d like to explore. There’s no pressure: You’re free to share as much or as little as you like, you can stop at any time, this is meant to be brief and supportive! Feel free to let me know what’s on your mind or what you’ve been thinking about lately.",
+        role: "chatbot-message",
+        message_trigger: 0
+      },
+    ]
+
+    continue_button = {
+      timer_trigger: 100, //300000
+      message_trigger: 200000,
+      message: "Continue button is now available - please take your time and continue when you feel ready",
+    }
+
+    const chat_trial = {
+      type: jsPsychChat,
+      ai_model: "gpt-4o",
+      ai_prompt: function(){
+        if (version == 0){
+          return `You are an empathetic, skilled Single-Session Therapy (SST) practitioner. Your goal is to help clients achieve meaningful progress in one session by focusing on actionable solutions, leveraging their strengths, and maintaining a clear, structured conversation. Approach each session as if it could be the only therapeutic interaction the client ever has.
+
+Core Principles:
+1. Therapist Mindset:
+   - Intentionality: Believe change is possible in one session
+   - Rapport-Building: Be warm, nonjudgmental, and empathetic
+   - Clarity & Focus: Quickly identify the client's target problem and goal
+   - Active Engagement: Ask purposeful questions
+   - Flexibility: Adapt without rigid formulas
+   - Strength-Based: Highlight existing resources
+   - Metaphors & Stories: Use relatable analogies
+   - Emotional Impact: Balance logic with emotion
+
+2. Client Engagement:
+   - Help them articulate problems/desired outcomes
+   - Encourage active problem-solving
+   - Practice solutions in-session (role-playing, reframing)
+   - Commit to post-session action steps
+
+Session Structure:
+- Opening (5-10 min): "What brings you here today?" + "What would make this worthwhile?"
+- Middle: Identify solvable problems, SMART goals, explore exceptions, create memorable metaphors
+- Closing (5-10 min): Summarize, action plan ("How/when/where will you try this?"), address loose ends
+
+Example Flow:
+Client: "I'm stuck in negative thoughts about my job."
+You:
+1. Focus: "What's one specific thought to address today?"
+2. Goal: "What would success look like?"
+3. Strengths: "When was this thought less bothersome?"
+4. Action: "Let's try reframing it now"
+5. Close: "What's one small step for tomorrow?"
+
+Key Phrases:
+- "Let's make today count"
+- "If this problem had a 'user manual'..."
+- "What's already working?"
+- "How can we test this now?"
+
+Critical Response Guidelines:
+1. Length: Keep responses to 1-5 sentences max (except during structured exercises)
+2. Pace: Match the client's message length and depth
+3. Style: Use natural conversation flow - no section headers or rigid templates`;
+          console.log(1)
+        } else {
+          return `You are a skilled therapy practitioner
+          Critical Response Guidelines:
+1. Length: Keep responses to 1-5 sentences max (except during structured exercises)
+2. Pace: Match the client's message length and depth
+3. Style: Use natural conversation flow - no section headers or rigid templates`
+          console.log(0)
+        }
+      },
+      chat_field_placeholder: "take your time to respond...",
+      continue_button: continue_button,
+      additional_prompts: prompts,
+      trial_duration: 5000, // Work? 
+      // prompt_chain: prompt_chain,
+      // selection_prompt: selection_prompt,
+    }
+    
+    var likert_scale = [
+        "Strongly Disagree", 
+        "Disagree", 
+        "Neutral", 
+        "Agree", 
+        "Strongly Agree"
+    ];
+
+    var survey1 = {
+        type: jsPsychSurveyLikert,
+        questions: [
+            {prompt: "Question 1.", name: 'Question 1', labels: likert_scale},
+            {prompt: "Question 2.", name: 'Question 2', labels: likert_scale},
+        ],
+        on_finish: function(data) {
+          var responses = data.response;
+          Object.assign(data, responses);
+          delete data.response;
+        }
+    };
+
+    var survey2 = {
+      type: jsPsychSurveyText,
+      questions: [
+        {prompt: 'Question 3', rows: 5, name: "Question 3"}, 
+        {prompt: 'Question 4', rows: 5, name: "Question 4"}, 
+      ], 
+      on_finish: function(data) {
+          var responses = data.response;
+          Object.assign(data, responses);
+          delete data.response;
+        }
+    }
+    const Bye = {
+        type: jsPsychHtmlKeyboardResponseRaf, 
+        stimulus: "Bye~"
+    }
+    var subject_id = jsPsych.data.getURLVariable('PROLIFIC_PID');
+    var study_id = jsPsych.data.getURLVariable('STUDY_ID');
+    var session_id = jsPsych.data.getURLVariable('SESSION_ID');
+
+    jsPsych.data.addProperties({
+        subject_id: subject_id,
+        study_id: study_id,
+        session_id: session_id, 
+        independent_variable: version
+    });
+
+    const save_data = {
+      type: jsPsychPipe, //Remember to open allow collect data on DataPipe!!
+      action: "save",
+      experiment_id: "34h1U6odP3Tg", 
+      filename: filename,
+        data_string: ()=>jsPsych.data.get().csv()
+      };
+
+    timeline.push(welcome, instruction, chat_trial, survey1, survey2, Bye, save_data);
+
+    jsPsych.run(timeline);
+
+  </script>
+</html>
